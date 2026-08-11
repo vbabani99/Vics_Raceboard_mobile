@@ -4,8 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="dark" />
-  <title>Vics_Smart_Raceboard_v3.1.2.02_MobileFit</title>
-  <!-- v3.1.2.02: Mobile Fit responsive para teléfonos; preserva stage 364x965 en desktop/OBS -->
+  <title>Vic's RaceBoard Mobile v0.2.0</title>
   <!-- v3.1.1.00: reloj broadcast estable: ticker único, sync anti-jitter, m:ss fijo y últimos 10 s sin escala -->
   <!-- v3.1.0.02: subdato GAP/INT más grande y legible, mantiene AVG, tiempo total del líder y reloj corregido -->
   <!-- v3.1.0.00: rediseño visual, estados de conexión, modo demo, carga resiliente de Firebase y animaciones optimizadas -->
@@ -4728,138 +4727,787 @@ window.addEventListener('load', async () => {
 
 </script>
 
-<!-- =========================================================
-     v3.1.2.02 Mobile Fit
-     - Mantiene intacto el stage interno 364x965
-     - En pantallas <= 600px escala automáticamente por ancho/alto
-     - Respeta safe areas de iPhone
-     - Recalcula con visualViewport, resize y orientationchange
-     - Desktop/OBS permanece sin cambios
-========================================================= -->
-<style id="vics-mobile-fit-v31202">
-@media screen and (max-width: 600px){
-  html, body{
-    width: 100% !important;
-    height: 100% !important;
-    min-width: 0 !important;
-    min-height: 100% !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-    background: #000 !important;
-    overscroll-behavior: none;
-    -webkit-text-size-adjust: 100%;
-    touch-action: manipulation;
-  }
 
-  body{
-    position: fixed !important;
-    inset: 0 !important;
-    display: block !important;
-  }
+<!-- ============================================================
+ VIC'S RACEBOARD MOBILE v0.2.0
+ Dedicated portrait display
+ Uses the proven v3.1.2.01 engine/feed underneath.
+ ============================================================ -->
+<style id="vics-mobile-v020">
+:root{
+  --m-red:#ff242f;
+  --m-red2:#8d0810;
+  --m-green:#32ff75;
+  --m-yellow:#ffd43b;
+  --m-purple:#c875ff;
+  --m-bg:#050506;
+  --m-panel:#0c0c0f;
+  --m-line:rgba(255,55,65,.48);
+  --m-muted:#90909a;
+}
+html,body{
+  margin:0!important;
+  width:100%!important;
+  height:100%!important;
+  min-width:0!important;
+  min-height:100%!important;
+  overflow:hidden!important;
+  background:#000!important;
+  overscroll-behavior:none;
+  -webkit-text-size-adjust:100%;
+}
+body{
+  position:fixed!important;
+  inset:0!important;
+}
+/* Engine stays alive but off-screen. */
+body > .card{
+  position:absolute!important;
+  left:-10000px!important;
+  top:0!important;
+  opacity:0!important;
+  pointer-events:none!important;
+}
 
-  .card{
-    width: 364px !important;
-    height: 965px !important;
-    min-width: 364px !important;
-    max-width: 364px !important;
-    min-height: 965px !important;
-    max-height: 965px !important;
+#mApp{
+  position:fixed;
+  inset:0;
+  z-index:99999;
+  width:100vw;
+  height:100dvh;
+  box-sizing:border-box;
+  color:#fff;
+  font-family:Arial,Helvetica,sans-serif;
+  background:
+    radial-gradient(circle at 50% 6%,rgba(255,22,34,.17),transparent 28%),
+    linear-gradient(180deg,#08080a 0%,#030304 100%);
+  padding:
+    max(7px,env(safe-area-inset-top))
+    8px
+    max(7px,env(safe-area-inset-bottom));
+  display:grid;
+  grid-template-rows:minmax(112px,19vh) auto minmax(92px,13vh) 1fr auto;
+  gap:6px;
+  overflow:hidden;
+}
+#mApp:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  opacity:.22;
+  background-image:
+    repeating-linear-gradient(135deg,rgba(255,255,255,.025) 0 2px,transparent 2px 7px);
+  mix-blend-mode:screen;
+}
+.mLogo{
+  position:relative;
+  min-height:0;
+  border-radius:17px;
+  border:1px solid rgba(255,45,55,.28);
+  background:
+    radial-gradient(circle at 50% 50%,rgba(255,0,20,.20),transparent 65%),
+    #08080a;
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 0 22px rgba(255,0,20,.08),inset 0 0 28px rgba(255,0,20,.06);
+}
+.mLogo img{
+  width:min(92%,430px);
+  height:92%;
+  object-fit:contain;
+  filter:drop-shadow(0 0 11px rgba(255,25,35,.22));
+}
+.mMeta{
+  position:relative;
+  display:grid;
+  grid-template-columns:1fr auto;
+  gap:6px;
+}
+.mMetaMain,.mLive{
+  border:1px solid rgba(255,255,255,.13);
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.012));
+  min-height:50px;
+}
+.mMetaMain{
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  min-width:0;
+  padding:6px 12px;
+}
+.mSeries{
+  color:#aaaab3;
+  font-weight:800;
+  font-size:clamp(11px,3.1vw,14px);
+  letter-spacing:.04em;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.mRace{
+  margin-top:2px;
+  font-size:clamp(18px,5.3vw,25px);
+  font-weight:950;
+  line-height:1.02;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.mRace .session{color:var(--m-red)}
+.mLive{
+  display:flex;
+  align-items:center;
+  gap:7px;
+  padding:0 11px;
+  white-space:nowrap;
+  font-size:clamp(10px,2.9vw,13px);
+  font-weight:900;
+  letter-spacing:.07em;
+}
+.mDot{
+  width:9px;height:9px;border-radius:50%;
+  background:var(--m-red);
+  box-shadow:0 0 10px var(--m-red);
+  animation:mDot 1.3s ease-in-out infinite;
+}
+@keyframes mDot{50%{opacity:.35;transform:scale(.78)}}
 
-    position: absolute !important;
-    left: 50% !important;
-    top: 50% !important;
+.mTimer{
+  position:relative;
+  border-radius:16px;
+  border:1px solid rgba(255,45,55,.58);
+  overflow:hidden;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  background:
+    linear-gradient(90deg,rgba(255,0,20,.05),transparent 28%,transparent 72%,rgba(255,0,20,.05)),
+    #09090b;
+  box-shadow:inset 0 0 25px rgba(255,0,20,.06);
+}
+.mTimerLabel{
+  position:absolute;
+  top:6px;
+  left:0;right:0;
+  text-align:center;
+  color:#b9b9c0;
+  font-size:clamp(9px,2.7vw,12px);
+  font-weight:900;
+  letter-spacing:.15em;
+}
+#mClock{
+  font-size:clamp(56px,18vw,88px);
+  line-height:.95;
+  font-weight:950;
+  color:var(--m-green);
+  letter-spacing:-.045em;
+  font-variant-numeric:tabular-nums;
+  text-shadow:0 0 18px rgba(50,255,117,.25);
+}
+#mClock.finished{color:#ff3a44;text-shadow:0 0 22px rgba(255,50,60,.3)}
+#mClock.critical{animation:mClockPulse .72s ease-in-out infinite}
+@keyframes mClockPulse{50%{transform:scale(1.045);filter:brightness(1.25)}}
 
-    /* JS sustituye --vics-mobile-scale */
-    transform:
-      translate(-50%, -50%)
-      scale(var(--vics-mobile-scale, 1)) !important;
-    transform-origin: center center !important;
+.mBoard{
+  position:relative;
+  min-height:0;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.mRow{
+  position:relative;
+  flex:1 1 0;
+  min-height:0;
+  display:grid;
+  grid-template-columns:58px minmax(0,1fr) 54px minmax(86px,.82fr);
+  align-items:center;
+  column-gap:6px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.11);
+  background:
+    linear-gradient(90deg,rgba(255,30,42,.055),transparent 42%),
+    linear-gradient(180deg,#101014,#08080a);
+  overflow:hidden;
+  box-shadow:inset 0 -2px 0 rgba(255,35,45,.52);
+  transform:translateZ(0);
+}
+.mRow.leader{border-color:rgba(255,45,55,.52);box-shadow:inset 4px 0 0 #ff1f2a,inset 0 -2px 0 #ff1f2a}
+.mPos{
+  height:calc(100% - 8px);
+  margin-left:4px;
+  border-radius:10px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:clamp(30px,10vw,47px);
+  font-weight:950;
+  font-style:italic;
+  background:#151519;
+  border:1px solid rgba(255,255,255,.15);
+}
+.mRow.p1 .mPos{background:linear-gradient(145deg,#ff3b39,#8d0006);border-color:#ff4b4b}
+.mRow.p2 .mPos{background:linear-gradient(145deg,#f5f7fa,#7d838b);color:#111;border-color:#fff}
+.mRow.p3 .mPos{background:linear-gradient(145deg,#df7e25,#6e2c00);color:#130900;border-color:#ff9c3a}
+.mName{min-width:0;padding-left:2px}
+.mFirst{
+  font-size:clamp(17px,5.5vw,26px);
+  line-height:1;
+  font-weight:950;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.mLast{
+  margin-top:3px;
+  font-size:clamp(10px,3.2vw,15px);
+  line-height:1;
+  color:#a8a8b0;
+  font-weight:850;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.mLaps{text-align:center}
+.mLapsN{
+  font-size:clamp(28px,9.2vw,44px);
+  line-height:.9;
+  font-weight:950;
+  font-variant-numeric:tabular-nums;
+}
+.mLapsL{
+  margin-top:3px;
+  font-size:clamp(8px,2.4vw,10px);
+  font-weight:900;
+  color:#92929a;
+  letter-spacing:.09em;
+}
+.mMetric{
+  position:relative;
+  align-self:stretch;
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  text-align:right;
+  padding-right:8px;
+  border-left:1px solid rgba(255,255,255,.07);
+}
+.mMetricLabel{
+  color:#85858d;
+  font-size:clamp(8px,2.4vw,10px);
+  font-weight:900;
+  letter-spacing:.07em;
+}
+.mMetricVal{
+  margin-top:2px;
+  font-size:clamp(17px,5.4vw,25px);
+  line-height:1;
+  font-weight:950;
+  font-variant-numeric:tabular-nums;
+  white-space:nowrap;
+}
+.mMetricVal.good{color:var(--m-green)}
+.mMetricVal.best{color:var(--m-purple)}
+.mMetricSwap{animation:mMetricSwap .36s ease-out both}
+@keyframes mMetricSwap{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:none}}
 
-    margin: 0 !important;
-    box-sizing: border-box !important;
-    contain: layout paint !important;
-  }
+.mFooter{
+  position:relative;
+  min-height:18px;
+  text-align:center;
+  color:#696970;
+  font-size:9px;
+  font-weight:800;
+  letter-spacing:.2em;
+}
+
+/* Full visual event layer */
+.mEvent{
+  position:absolute;
+  inset:0;
+  z-index:50;
+  background:rgba(0,0,0,.72);
+  backdrop-filter:blur(7px);
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+}
+.mEvent.show{display:flex;animation:mEventIn .18s ease-out both}
+@keyframes mEventIn{from{opacity:0}to{opacity:1}}
+.mEventCard{
+  width:100%;
+  max-width:430px;
+  min-height:44vh;
+  box-sizing:border-box;
+  border:1px solid rgba(255,55,65,.75);
+  border-radius:24px;
+  background:
+    radial-gradient(circle at 50% 0,rgba(255,25,40,.18),transparent 50%),
+    #09090c;
+  box-shadow:0 0 50px rgba(255,0,25,.23),inset 0 0 35px rgba(255,0,25,.07);
+  padding:20px 15px;
+  text-align:center;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  overflow:hidden;
+  position:relative;
+}
+.mEventCard:after{
+  content:"";
+  position:absolute;
+  width:150%;
+  height:42px;
+  left:-25%;
+  top:48%;
+  background:linear-gradient(90deg,transparent,rgba(255,35,50,.18),transparent);
+  transform:rotate(-7deg);
+  animation:mSweep 1s ease-out both;
+}
+@keyframes mSweep{from{transform:translateX(-80%) rotate(-7deg)}to{transform:translateX(80%) rotate(-7deg)}}
+.mEventKicker{
+  color:#cacad0;
+  font-size:clamp(12px,3.5vw,16px);
+  font-weight:950;
+  letter-spacing:.16em;
+}
+.mEventTitle{
+  margin-top:8px;
+  color:#fff;
+  font-size:clamp(34px,10.5vw,54px);
+  line-height:.9;
+  font-weight:1000;
+  font-style:italic;
+  text-transform:uppercase;
+  text-shadow:0 0 22px rgba(255,40,50,.25);
+}
+.mEventName{
+  margin-top:21px;
+  font-size:clamp(29px,8.5vw,42px);
+  line-height:.95;
+  font-weight:1000;
+}
+.mEventNumber{
+  margin-top:15px;
+  font-size:clamp(60px,19vw,96px);
+  line-height:.88;
+  font-weight:1000;
+  font-variant-numeric:tabular-nums;
+  color:var(--m-green);
+  text-shadow:0 0 26px rgba(50,255,117,.30);
+}
+.mEventSub{
+  margin-top:12px;
+  color:#bcbcc5;
+  font-size:clamp(15px,4.3vw,21px);
+  font-weight:900;
+}
+.mEventDelta{
+  color:var(--m-green);
+  font-size:clamp(22px,6.8vw,32px);
+  font-weight:1000;
+  margin-top:10px;
+}
+.mArrow{
+  font-size:clamp(65px,20vw,105px);
+  line-height:.75;
+  margin-top:14px;
+}
+.mArrow.up{color:var(--m-green);text-shadow:0 0 30px rgba(50,255,117,.35)}
+.mArrow.down{color:#ff414b;text-shadow:0 0 30px rgba(255,50,60,.35)}
+.mEvent.position .mEventCard{border-color:rgba(50,255,117,.55)}
+.mEvent.fastest .mEventCard{border-color:rgba(200,117,255,.82);box-shadow:0 0 55px rgba(190,100,255,.20)}
+.mEvent.fastest .mEventNumber{color:var(--m-purple);text-shadow:0 0 28px rgba(200,117,255,.34)}
+
+/* Alternate screen, intentionally low-data / large-data */
+.mAlt{
+  position:absolute;
+  inset:0;
+  z-index:40;
+  display:none;
+  padding:
+    max(9px,env(safe-area-inset-top))
+    10px
+    max(9px,env(safe-area-inset-bottom));
+  box-sizing:border-box;
+  background:#050506;
+}
+.mAlt.show{display:flex;flex-direction:column;animation:mSlideIn .35s cubic-bezier(.2,.8,.2,1) both}
+@keyframes mSlideIn{from{opacity:0;transform:translateX(16%)}to{opacity:1;transform:none}}
+.mAltLogo{height:20vh;min-height:118px;display:flex;justify-content:center;align-items:center}
+.mAltLogo img{width:91%;height:100%;object-fit:contain}
+.mAltTitle{text-align:center;color:#fff;font-size:clamp(25px,7.6vw,37px);font-weight:1000;font-style:italic}
+.mAltTitle span{color:var(--m-red)}
+.mDuel{
+  flex:1;
+  display:grid;
+  grid-template-columns:1fr;
+  grid-template-rows:1fr auto 1fr;
+  gap:8px;
+  min-height:0;
+  margin-top:10px;
+}
+.mDuelPilot{
+  border:1px solid rgba(255,255,255,.14);
+  border-radius:18px;
+  display:grid;
+  grid-template-columns:78px 1fr auto;
+  align-items:center;
+  padding:8px 12px;
+  background:linear-gradient(90deg,rgba(255,35,45,.09),transparent);
+}
+.mDuelPos{font-size:clamp(50px,15vw,72px);font-weight:1000;font-style:italic}
+.mDuelName{font-size:clamp(26px,7.5vw,36px);font-weight:1000;line-height:.95}
+.mDuelLaps{text-align:right;font-size:clamp(48px,14vw,68px);font-weight:1000}
+.mDuelLaps small{display:block;font-size:11px;color:#999}
+.mDuelGap{text-align:center}
+.mDuelGap small{display:block;color:#999;font-size:12px;font-weight:900;letter-spacing:.13em}
+.mDuelGap strong{display:block;color:var(--m-red);font-size:clamp(58px,18vw,90px);line-height:1;font-weight:1000}
+.mAltClock{text-align:center;color:var(--m-green);font-size:clamp(38px,12vw,58px);font-weight:1000;font-variant-numeric:tabular-nums}
+
+/* iPhone SE / short phones */
+@media (max-height:700px){
+  #mApp{grid-template-rows:minmax(90px,16vh) auto minmax(76px,11vh) 1fr auto;gap:4px}
+  .mRow{grid-template-columns:50px minmax(0,1fr) 48px minmax(79px,.78fr);column-gap:4px}
+  .mLogo img{height:96%}
 }
 </style>
 
-<script id="vics-mobile-fit-v31202-js">
+<div id="mApp" aria-label="Vic's RaceBoard Mobile">
+  <section class="mLogo">
+    <img src="https://i.ibb.co/wFx8B4mW/logo-vics-PT.gif" alt="Vic's Pulse Timing">
+  </section>
+
+  <section class="mMeta">
+    <div class="mMetaMain">
+      <div class="mSeries" id="mSeries">Turbo Racing México</div>
+      <div class="mRace" id="mRace">Esperando carrera...</div>
+    </div>
+    <div class="mLive"><span class="mDot"></span><span id="mStatus">LIVE</span></div>
+  </section>
+
+  <section class="mTimer">
+    <div class="mTimerLabel">TIEMPO DE CARRERA</div>
+    <div id="mClock">--:--</div>
+  </section>
+
+  <main class="mBoard" id="mBoard"></main>
+  <footer class="mFooter">VIC'S RACEBOARD MOBILE · v0.2.0</footer>
+
+  <div class="mEvent" id="mEvent">
+    <div class="mEventCard">
+      <div class="mEventKicker" id="mEventKicker"></div>
+      <div class="mEventTitle" id="mEventTitle"></div>
+      <div class="mEventName" id="mEventName"></div>
+      <div class="mArrow" id="mEventArrow"></div>
+      <div class="mEventNumber" id="mEventNumber"></div>
+      <div class="mEventSub" id="mEventSub"></div>
+      <div class="mEventDelta" id="mEventDelta"></div>
+    </div>
+  </div>
+
+  <div class="mAlt" id="mAlt">
+    <div class="mAltLogo"><img src="https://i.ibb.co/wFx8B4mW/logo-vics-PT.gif" alt=""></div>
+    <div class="mAltTitle">BATALLA <span>EN PISTA</span></div>
+    <div class="mDuel">
+      <div class="mDuelPilot" id="mDuel1"></div>
+      <div class="mDuelGap"><small>INTERVALO</small><strong id="mDuelGap">--</strong></div>
+      <div class="mDuelPilot" id="mDuel2"></div>
+    </div>
+    <div class="mAltClock" id="mAltClock">--:--</div>
+  </div>
+</div>
+
+<script id="vics-mobile-v020-js">
 (function(){
-  "use strict";
+"use strict";
 
-  const DESIGN_W = 364;
-  const DESIGN_H = 965;
-  const MOBILE_MAX = 600;
+const $ = s => document.querySelector(s);
+const board = $("#mBoard");
+const eventLayer = $("#mEvent");
+const altLayer = $("#mAlt");
 
-  function viewportSize(){
-    const vv = window.visualViewport;
-    return {
-      w: Math.max(1, vv ? vv.width  : window.innerWidth),
-      h: Math.max(1, vv ? vv.height : window.innerHeight)
-    };
+const state = {
+  rows:new Map(),
+  prevGlobalBest:0,
+  eventUntil:0,
+  lastAltAt:Date.now(),
+  altUntil:0,
+  metricMode:"gap",
+  lastMetricSwap:Date.now(),
+  initialized:false,
+  pendingEvent:null
+};
+
+function num(v){
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+}
+function parseMs(v){
+  if(v==null || v==="") return 0;
+  if(typeof v==="number" && Number.isFinite(v)){
+    if(v>200) return Math.round(v);
+    return Math.round(v*1000);
+  }
+  let s=String(v).trim().replace(",",".");
+  if(!s) return 0;
+  const parts=s.split(":").map(Number);
+  if(parts.some(x=>!Number.isFinite(x))) return 0;
+  if(parts.length===3) return Math.round((parts[0]*3600+parts[1]*60+parts[2])*1000);
+  if(parts.length===2) return Math.round((parts[0]*60+parts[1])*1000);
+  const x=Number(s); return Number.isFinite(x) ? Math.round(x*1000) : 0;
+}
+function fmtLap(ms){
+  ms=num(ms);
+  if(ms<=0) return "--.---";
+  const sec=ms/1000;
+  const m=Math.floor(sec/60);
+  const s=sec-m*60;
+  return m>0 ? `${m}:${s.toFixed(3).padStart(6,"0")}` : s.toFixed(3);
+}
+function rowBest(r){
+  return num(r.bestMs||r.bestLapMs||r.bestlapMs||r.best||r.bestTime||r.bestLapTime) ||
+         parseMs(r.bestLapTime||r.bestTime);
+}
+function rowLast(r){
+  return num(r.lastLapMs||r.last_lap_ms||r.lastMs) ||
+         parseMs(r.lastLapRaw||r.lastLapTime||r.lastLap||r.last);
+}
+function keyForM(r){
+  return String(r.pilotKey||r.racerNumber||r.driverNumber||r.no||r.id||r.name||"").trim();
+}
+function splitNameM(name){
+  const p=String(name||"").trim().split(/\s+/).filter(Boolean);
+  if(!p.length) return {first:"---",last:""};
+  if(p.length===1) return {first:p[0],last:""};
+  return {first:p[0],last:p.slice(1).join(" ")};
+}
+function gapText(r){
+  if(num(r.pos)===1) return "LÍDER";
+  let s=String(r.interval||r.gap||r.diff||"").trim();
+  if(!s) return "--";
+  return s.replace(/\s*V\b/i," V");
+}
+function liveRows(){
+  const a=Array.isArray(window.__lastRows)?window.__lastRows:[];
+  return a.slice().sort((x,y)=>num(x.pos)-num(y.pos));
+}
+function shortClock(){
+  const el=$("#raceClockText");
+  let t=el?String(el.textContent||"").trim():"--:--";
+  if(/^\d{2}:\d{2}:\d{2}$/.test(t)) t=t.slice(3);
+  if(/^\d{1,2}:\d{2}:\d{3}$/.test(t)) t=t.split(":").slice(0,2).join(":");
+  return t||"--:--";
+}
+function copyMeta(){
+  const title=($("#titleText")?.textContent||"").trim();
+  const a=($("#rn1txt")?.textContent||"").trim();
+  const b=($("#rn2")?.textContent||"").trim();
+  let race=[a,b].filter(Boolean).join(" · ");
+  if(title && !race.includes(title)) race = race ? `${race} · ${title}` : title;
+  $("#mRace").textContent=race||"Esperando carrera...";
+  const status=$("#liveBadge");
+  $("#mStatus").textContent=(status && /offline|error/i.test(status.className))?"OFFLINE":"LIVE";
+
+  const original=$("#raceClockText");
+  const mc=$("#mClock");
+  mc.textContent=shortClock();
+  mc.classList.toggle("finished",!!(original&&original.classList.contains("finished")));
+  mc.classList.toggle("critical",!!(original&&original.classList.contains("critical")));
+  $("#mAltClock").textContent=mc.textContent;
+}
+function metricFor(r){
+  if(state.metricMode==="last"){
+    const ms=rowLast(r);
+    return {label:"ÚLTIMA",value:ms?fmtLap(ms):"--.---",cls:""};
+  }
+  const g=gapText(r);
+  return {label:num(r.pos)===1?"ESTADO":"GAP",value:g,cls:num(r.pos)===1?"good":""};
+}
+function createRowEl(r){
+  const e=document.createElement("div");
+  e.className="mRow";
+  e.innerHTML=`
+    <div class="mPos"></div>
+    <div class="mName"><div class="mFirst"></div><div class="mLast"></div></div>
+    <div class="mLaps"><div class="mLapsN"></div><div class="mLapsL">VUELTAS</div></div>
+    <div class="mMetric"><div class="mMetricLabel"></div><div class="mMetricVal"></div></div>`;
+  return e;
+}
+function paintBoard(rows){
+  const top=rows.slice(0,6);
+  const used=new Set();
+
+  top.forEach(r=>{
+    const k=keyForM(r);
+    used.add(k);
+    let obj=state.rows.get(k);
+    if(!obj){
+      obj={el:createRowEl(r),pos:num(r.pos),best:rowBest(r),last:rowLast(r)};
+      state.rows.set(k,obj);
+      board.appendChild(obj.el);
+    }
+    const e=obj.el, p=num(r.pos);
+    e.className=`mRow p${Math.min(3,p)}${p===1?" leader":""}`;
+    e.style.order=String(p);
+    e.querySelector(".mPos").textContent=p||"-";
+    const n=splitNameM(r.name);
+    e.querySelector(".mFirst").textContent=n.first;
+    e.querySelector(".mLast").textContent=n.last;
+    e.querySelector(".mLapsN").textContent=String(r.laps??"--");
+    const m=metricFor(r);
+    const mv=e.querySelector(".mMetricVal");
+    e.querySelector(".mMetricLabel").textContent=m.label;
+    mv.textContent=m.value;
+    mv.className="mMetricVal "+m.cls;
+  });
+
+  Array.from(state.rows.entries()).forEach(([k,obj])=>{
+    if(!used.has(k)){
+      obj.el.remove();
+      state.rows.delete(k);
+    }
+  });
+}
+function showEvent(type,data,duration=2600){
+  const now=Date.now();
+  state.eventUntil=now+duration;
+  state.altUntil=0;
+  altLayer.classList.remove("show");
+
+  eventLayer.className="mEvent show "+type;
+  $("#mEventKicker").textContent=data.kicker||"";
+  $("#mEventTitle").textContent=data.title||"";
+  $("#mEventName").textContent=data.name||"";
+  $("#mEventNumber").textContent=data.number||"";
+  $("#mEventSub").textContent=data.sub||"";
+  $("#mEventDelta").textContent=data.delta||"";
+  const arrow=$("#mEventArrow");
+  arrow.textContent=data.arrow||"";
+  arrow.className="mArrow "+(data.arrowClass||"");
+}
+function detectEvents(rows){
+  if(!state.initialized){
+    rows.forEach(r=>state.rows.set(keyForM(r),{el:createRowEl(r),pos:num(r.pos),best:rowBest(r),last:rowLast(r)}));
+    state.prevGlobalBest=Math.min(...rows.map(rowBest).filter(x=>x>0),Infinity);
+    if(!Number.isFinite(state.prevGlobalBest)) state.prevGlobalBest=0;
+    state.initialized=true;
+    return;
   }
 
-  function safeAreaEstimate(){
-    /*
-      CSS env() no se puede leer directamente de JS de forma fiable.
-      Dejamos un pequeño colchón visual para notch / Home Indicator
-      y para la UI dinámica de Safari.
-    */
-    const isiOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
-    return isiOS ? 10 : 6;
-  }
+  let globalNow=Math.min(...rows.map(rowBest).filter(x=>x>0),Infinity);
+  if(!Number.isFinite(globalNow)) globalNow=0;
 
-  function fitRaceboard(){
-    const root = document.documentElement;
-    const card = document.querySelector(".card");
-    if (!card) return;
+  let candidate=null;
+  rows.forEach(r=>{
+    const k=keyForM(r), old=state.rows.get(k);
+    if(!old) return;
+    const p=num(r.pos), b=rowBest(r), l=rowLast(r);
 
-    const vp = viewportSize();
-    const isMobile = vp.w <= MOBILE_MAX;
-
-    if (!isMobile){
-      root.style.removeProperty("--vics-mobile-scale");
-      root.classList.remove("vics-mobile-fit");
-      return;
+    if(old.pos && p && old.pos!==p && !candidate){
+      const up=p<old.pos;
+      candidate={
+        priority:3,type:"position",
+        data:{
+          kicker:"CAMBIO DE POSICIÓN",
+          title:up?"¡SUBE!":"PIERDE POSICIÓN",
+          name:r.name||"",
+          arrow:up?"▲":"▼",
+          arrowClass:up?"up":"down",
+          number:`P${p}`,
+          sub:`antes P${old.pos}`
+        }
+      };
     }
 
-    const pad = safeAreaEstimate();
-    const usableW = Math.max(1, vp.w - pad * 2);
-    const usableH = Math.max(1, vp.h - pad * 2);
+    if(old.best>0 && b>0 && b<old.best){
+      const imp=(old.best-b)/1000;
+      const isGlobal=(globalNow>0 && b===globalNow && (!state.prevGlobalBest || globalNow<state.prevGlobalBest));
+      const ev={
+        priority:isGlobal?5:4,
+        type:isGlobal?"fastest":"fastest",
+        data:{
+          kicker:isGlobal?"NUEVA VUELTA RÁPIDA":"MEJORA PERSONAL",
+          title:isGlobal?"FASTEST LAP":"PERSONAL BEST",
+          name:r.name||"",
+          number:fmtLap(b),
+          sub:isGlobal?"MEJOR VUELTA DE LA SESIÓN":"NUEVO MEJOR TIEMPO",
+          delta:`-${imp.toFixed(3)} s`
+        }
+      };
+      if(!candidate || ev.priority>candidate.priority) candidate=ev;
+    }
+    old.pos=p; old.best=b||old.best; old.last=l||old.last;
+  });
 
-    // Fit completo: nunca corta información.
-    let scale = Math.min(usableW / DESIGN_W, usableH / DESIGN_H);
+  if(globalNow>0) state.prevGlobalBest=globalNow;
+  if(candidate && Date.now()>state.eventUntil) showEvent(candidate.type,candidate.data);
+}
+function duelHtml(r){
+  const n=splitNameM(r.name);
+  return `<div class="mDuelPos">${r.pos}</div>
+          <div class="mDuelName">${n.first}<br><span style="color:#999;font-size:.62em">${n.last}</span></div>
+          <div class="mDuelLaps">${r.laps??"--"}<small>VUELTAS</small></div>`;
+}
+function maybeAlt(rows){
+  const now=Date.now();
+  if(now<state.eventUntil) return;
+  if(state.altUntil>now) return;
 
-    // Evita ampliaciones absurdas en teléfonos muy altos.
-    scale = Math.min(scale, 1.12);
+  /* Only show an alternate page when there is a meaningful top-2 battle.
+     This avoids showing a dense "stats dashboard". */
+  if(now-state.lastAltAt<14000 || rows.length<2) return;
 
-    root.style.setProperty("--vics-mobile-scale", scale.toFixed(5));
-    root.classList.add("vics-mobile-fit");
+  const r1=rows[0],r2=rows[1];
+  let g=String(r2.interval||r2.gap||r2.diff||"").trim();
+  const gm=g.match(/[+-]?\d+(?:\.\d+)?/);
+  const gs=gm?Math.abs(parseFloat(gm[0])):99;
+
+  if(gs<=1.25){
+    $("#mDuel1").innerHTML=duelHtml(r1);
+    $("#mDuel2").innerHTML=duelHtml(r2);
+    $("#mDuelGap").textContent=g||"--";
+    altLayer.classList.add("show");
+    state.altUntil=now+4200;
+  }
+  state.lastAltAt=now;
+}
+function tick(){
+  const now=Date.now();
+  copyMeta();
+  const rows=liveRows();
+
+  if(now-state.lastMetricSwap>5200){
+    state.metricMode=state.metricMode==="gap"?"last":"gap";
+    state.lastMetricSwap=now;
+    document.querySelectorAll(".mMetric").forEach(x=>{
+      x.classList.remove("mMetricSwap"); void x.offsetWidth; x.classList.add("mMetricSwap");
+    });
   }
 
-  let raf = 0;
-  function scheduleFit(){
-    cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(fitRaceboard);
+  if(rows.length){
+    detectEvents(rows);
+    paintBoard(rows);
+    maybeAlt(rows);
   }
 
-  window.addEventListener("resize", scheduleFit, {passive:true});
-  window.addEventListener("orientationchange", scheduleFit, {passive:true});
-
-  if (window.visualViewport){
-    window.visualViewport.addEventListener("resize", scheduleFit, {passive:true});
-    window.visualViewport.addEventListener("scroll", scheduleFit, {passive:true});
+  if(state.eventUntil && now>=state.eventUntil){
+    eventLayer.className="mEvent";
+    state.eventUntil=0;
   }
-
-  if (document.readyState === "loading"){
-    document.addEventListener("DOMContentLoaded", scheduleFit, {once:true});
-  } else {
-    scheduleFit();
+  if(state.altUntil && now>=state.altUntil){
+    altLayer.classList.remove("show");
+    state.altUntil=0;
   }
-
-  // Safari puede cambiar el alto útil después de cargar barras.
-  setTimeout(scheduleFit, 80);
-  setTimeout(scheduleFit, 350);
+}
+setInterval(tick,180);
+setTimeout(tick,100);
 })();
 </script>
 
